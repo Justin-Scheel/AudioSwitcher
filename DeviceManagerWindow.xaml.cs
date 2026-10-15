@@ -24,6 +24,7 @@ public partial class DeviceManagerWindow : Window
     {
         var settings = _store.Load();
         _allDevices = AudioDeviceService.GetDevices();
+
         foreach (var device in _allDevices)
         {
             var order = settings.FavoriteDeviceIds.IndexOf(device.Id);
@@ -44,13 +45,20 @@ public partial class DeviceManagerWindow : Window
             .ThenBy(d => d.Name);
 
         Devices.Clear();
-        foreach (var device in sorted.Where(d => string.IsNullOrWhiteSpace(query) ||
-                                                  d.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                                                  d.Direction.Contains(query, StringComparison.OrdinalIgnoreCase)))
+        
+        var filtered = sorted.Where(d => string.IsNullOrWhiteSpace(query) || 
+            d.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+            d.Direction.Contains(query, StringComparison.OrdinalIgnoreCase));
+        
+        foreach (var device in filtered)
+        {
             Devices.Add(device);
+        }
 
         if (CountText is not null)
+        {
             CountText.Text = $"{_allDevices.Count} Geräte · {_allDevices.Count(d => d.IsFavorite)} Favoriten";
+        }
     }
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => RenderList();

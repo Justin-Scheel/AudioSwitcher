@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 
 namespace AudioSwitcher;
@@ -8,6 +10,9 @@ public partial class MainWindow : Window
     private readonly AudioDeviceService _deviceService = new();
     private readonly SettingsStore _settingsStore = new();
     private SettingsData _settings = new();
+
+    private bool IsFxSoundInstalled => File.Exists(@"C:\Program Files\FxSound LLC\FxSound\FxSound.exe");
+    private bool hasFxSoundBeenStarted = false;
 
     public ObservableCollection<AudioDeviceRow> PlaybackFavorites { get; } = new();
     public AudioDeviceRow? SelectedDevice { get; set; }
@@ -70,6 +75,40 @@ public partial class MainWindow : Window
 
         try
         {
+            var isFxSound = selected.Name.Contains("FxSound");
+
+            // Special case for the FxSound virtual audio device, which will not be started/used when only set as the default device.
+            if (isFxSound && !this.hasFxSoundBeenStarted)
+            {
+                if (this.IsFxSoundInstalled)
+                {
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = @"C:\Program Files\FxSound LLC\FxSound\FxSound.exe",
+                        UseShellExecute = true
+                    };
+
+                    Process.Start(startInfo);
+                    this.hasFxSoundBeenStarted = true;
+                }
+                else
+                {
+                    StatusText.Text = $"FxSound konnte nicht gestartet werden, da die Datei nicht gefunden wurde. Standardpfad: {@"C:\Program Files\FxSound LLC\FxSound\FxSound.exe"}";
+                }
+            }
+
+            // Kill FxSound process if it was started and the selected device is not FxSound to avoid issues with other audio devices
+            if (!isFxSound && this.hasFxSoundBeenStarted)
+            {
+                foreach (var process in Process.GetProcessesByName("FxSound"))
+                {
+                    process.Kill();
+                    process.WaitForExit();
+                }
+
+                this.hasFxSoundBeenStarted = false;
+            }
+
             AudioDeviceService.SetDefaultDevice(selected.Device.Id, "Playback");
             Reload();
             StatusText.Text = $"Standardgerät gesetzt: {selected.Device.Name}";
@@ -90,5 +129,9 @@ public sealed class AudioDeviceRow
     public string Name => Device.Name;
     public string StateLabel => Device.StateLabel;
     public bool IsDefault { get; }
-    public AudioDeviceRow(AudioDevice device, bool isDefault) { Device = device; IsDefault = isDefault; }
+    public AudioDeviceRow(AudioDevice device, bool isDefault) 
+    { 
+        Device = device; 
+        IsDefault = isDefault; 
+    }
 }
