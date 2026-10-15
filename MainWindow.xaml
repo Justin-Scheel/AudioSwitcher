@@ -1,0 +1,96 @@
+﻿<Window x:Class="AudioSwitcher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:audioswitcher="clr-namespace:AudioSwitcher"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=audioswitcher:AudioDevice, IsDesignTimeCreatable=False}"
+        Title="AudioSwitcher" Height="690" Width="920" MinHeight="560" MinWidth="760"
+        Background="{StaticResource WindowBrush}"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,22">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="AUDIO SWITCHER" Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="Bold"/>
+                <TextBlock Text="Deine Audio-Geräte" Foreground="{StaticResource AccentBrush}" FontSize="30" FontWeight="SemiBold" Margin="0,5,0,3"/>
+                <TextBlock Text="Favoriten auswählen und Windows-Standardgeräte wechseln." Foreground="{StaticResource MutedBrush}"/>
+            </StackPanel>
+            <Button Grid.Column="1" Background="{StaticResource DefaultButtonBrush}" VerticalAlignment="Center" Click="ManageDevices_Click">Geräte verwalten  ↗</Button>
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Background="#252B38" CornerRadius="7" Padding="10,5" Margin="0,0,8,0">
+                    <TextBlock Text="WIEDERGABE" FontSize="10" Padding="6,4" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
+                </Border>
+                <TextBlock Text="Ausgabe wählen" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Button Grid.Column="1" Background="{StaticResource DefaultButtonBrush}" Padding="10,6" Click="Refresh_Click">↻ Aktualisieren</Button>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{StaticResource PanelBrush}" CornerRadius="16" Padding="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ListBox x:Name="PlaybackList" ItemsSource="{Binding PlaybackFavorites}" SelectedItem="{Binding SelectedPlayback, Mode=TwoWay}" Background="{StaticResource PanelBrush}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="8,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="42"/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="38" Height="38" CornerRadius="10" Background="#2A3040" VerticalAlignment="Center">
+                                    <TextBlock Text="♫" FontSize="20" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <TextBlock Text="{Binding Name}" Foreground="LightGray" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding StateLabel}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,3,0,0"/>
+                                </StackPanel>
+                                <Border Grid.Column="2" Background="#203C32" CornerRadius="7" Padding="9,5" VerticalAlignment="Center" Visibility="{Binding IsDefault, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="STANDARD" Foreground="#91E0B8" FontSize="10" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock x:Name="EmptyMessage" Grid.Row="0" Text="Noch keine Favoriten. Öffne „Geräte verwalten“, um deine wichtigsten Geräte auszuwählen."
+                   Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Center"
+                   MaxWidth="420" TextAlignment="Center" Visibility="Collapsed" Margin="30"/>
+                <Border Grid.Row="1" Background="#12151B" CornerRadius="10" Padding="12" Margin="0,8,0,0">
+                    <TextBlock Text="Hinweis: Hier werden aktive Wiedergabegeräte angezeigt. Aufnahmegeräte kannst du in der Verwaltung ebenfalls als Favoriten markieren."
+                     Foreground="{StaticResource MutedBrush}" FontSize="12" TextWrapping="Wrap"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="3" Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="StatusText" Text="Bereit" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            <Button Grid.Column="1" Background="{StaticResource AccentBrush}" Foreground="#10131A" BorderThickness="0"
+              FontWeight="SemiBold" Click="SetDefault_Click">Als Standard festlegen</Button>
+        </Grid>
+    </Grid>
+</Window>

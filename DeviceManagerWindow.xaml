@@ -1,0 +1,52 @@
+<Window x:Class="AudioSwitcher.DeviceManagerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Geräte verwalten" Height="700" Width="820" MinHeight="580" MinWidth="680"
+        Background="{StaticResource WindowBrush}"
+        WindowStartupLocation="CenterOwner">
+  <Grid Margin="24">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <StackPanel Grid.Row="0" Margin="0,0,0,18">
+      <TextBlock Text="KONFIGURATION" Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="Bold"/>
+            <TextBlock Text="Deine Favoriten" Foreground="{StaticResource AccentBrush}" FontSize="28" FontWeight="SemiBold" Margin="0,5,0,4"/>
+      <TextBlock Text="Suche Lieblings-Audiogeräte heraus, um sie in der Hauptansicht aufzulisten. Die Reihenfolge lässt sich über die Pfeile ändern."
+                 Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/>
+    </StackPanel>
+
+    <Grid Grid.Row="1" Margin="0,0,0,10">
+      <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <TextBox x:Name="SearchBox" Height="38" Padding="10,7" Background="#1A1D24" Foreground="{StaticResource TextBrush}"
+               BorderBrush="#3A4150" BorderThickness="1" VerticalContentAlignment="Center"
+               TextChanged="SearchBox_TextChanged"/>
+            <Button Grid.Column="1" Margin="10,0,0,0" Background="{StaticResource DefaultButtonBrush}" Click="Refresh_Click">Geräte neu laden</Button>
+    </Grid>
+
+    <Border Grid.Row="2" Background="{StaticResource DefaultBorderBrush}" CornerRadius="6" Padding="3">
+      <ListBox x:Name="DevicesList" Background="{StaticResource PanelBrush}" ItemsSource="{Binding Devices}">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Grid Margin="8,8">
+              <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding IsFavorite, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"
+                        Margin="0,0,12,0" ToolTip="In der Hauptansicht anzeigen"/>
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Name}" Foreground="LightGray" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding DirectionLabel}" Foreground="{StaticResource MutedBrush}" FontSize="10" Margin="0,3,0,0"/>
+              </StackPanel>
+              <Button Grid.Column="2" MaxHeight="21px" Padding="5,2" Margin="6,0" Background="{StaticResource DefaultButtonBrush}" Tag="{Binding}" Click="MoveUp_Click" ToolTip="Weiter nach oben">↑</Button>
+              <Button Grid.Column="3" MaxHeight="21px" Padding="5,2" Margin="0,0,0,0" Background="{StaticResource DefaultButtonBrush}" Tag="{Binding}" Click="MoveDown_Click" ToolTip="Weiter nach unten">↓</Button>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+
+    <Grid Grid.Row="3" Margin="0,16,0,0">
+      <TextBlock x:Name="CountText" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center"/>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Margin="0,0,8,0" Click="Cancel_Click">Abbrechen</Button>
+        <Button Background="{StaticResource AccentBrush}" Foreground="#10131A" BorderThickness="0" FontWeight="SemiBold" Click="Save_Click">Auswahl speichern</Button>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>
