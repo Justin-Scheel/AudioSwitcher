@@ -11,10 +11,12 @@ public partial class MainWindow : Window
     private readonly SettingsStore _settingsStore = new();
     private SettingsData _settings = new();
 
+    // FxSound flags
     private bool IsFxSoundInstalled => File.Exists(@"C:\Program Files\FxSound LLC\FxSound\FxSound.exe");
-    private bool hasFxSoundBeenStarted = false;
+    private bool IsFxSoundRunning = Process.GetProcessesByName("FxSound").Length > 0;
 
-    public ObservableCollection<AudioDeviceRow> PlaybackFavorites { get; } = new();
+    // Audio devices
+    public ObservableCollection<AudioDeviceRow> FavoriteAudioDevices { get; } = new();
     public AudioDeviceRow? SelectedDevice { get; set; }
 
     public MainWindow()
@@ -39,21 +41,21 @@ public partial class MainWindow : Window
             return;
         }
 
-        PlaybackFavorites.Clear();
+        FavoriteAudioDevices.Clear();
 
         foreach (var device in filteredDevices)
         {
-            PlaybackFavorites.Add(new AudioDeviceRow(device, device.Id == defaultId));
+            FavoriteAudioDevices.Add(new AudioDeviceRow(device, device.Id == defaultId));
         }
 
-        EmptyMessage.Visibility = PlaybackFavorites.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        EmptyMessage.Visibility = FavoriteAudioDevices.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
-        if (PlaybackFavorites.Count > 0)
+        if (FavoriteAudioDevices.Count > 0)
         {
-            PlaybackList.SelectedIndex = 0;
+            AudioDevices.SelectedIndex = 0;
         }
 
-        StatusText.Text = $" {devices.Count} aktive Geräte erkannt · {PlaybackFavorites.Count} Wiedergabe-Favoriten";
+        StatusText.Text = $" {devices.Count} aktive Geräte erkannt · {FavoriteAudioDevices.Count} Wiedergabe-Favoriten";
     }
 
     private void Refresh_Click(object sender, RoutedEventArgs e) => Reload();
@@ -67,7 +69,7 @@ public partial class MainWindow : Window
 
     private void SetDefault_Click(object sender, RoutedEventArgs e)
     {
-        if (PlaybackList.SelectedItem is not AudioDeviceRow selected)
+        if (AudioDevices.SelectedItem is not AudioDeviceRow selected)
         {
             StatusText.Text = "Bitte zuerst ein Wiedergabegerät auswählen.";
             return;
@@ -78,7 +80,7 @@ public partial class MainWindow : Window
             var isFxSound = selected.Name.Contains("FxSound");
 
             // Special case for the FxSound virtual audio device, which will not be started/used when only set as the default device.
-            if (isFxSound && !this.hasFxSoundBeenStarted)
+            if (isFxSound && !this.IsFxSoundRunning)
             {
                 if (this.IsFxSoundInstalled)
                 {
@@ -89,7 +91,7 @@ public partial class MainWindow : Window
                     };
 
                     Process.Start(startInfo);
-                    this.hasFxSoundBeenStarted = true;
+                    this.IsFxSoundRunning = true;
                 }
                 else
                 {
@@ -98,7 +100,7 @@ public partial class MainWindow : Window
             }
 
             // Kill FxSound process if it was started and the selected device is not FxSound to avoid issues with other audio devices
-            if (!isFxSound && this.hasFxSoundBeenStarted)
+            if (!isFxSound && this.IsFxSoundRunning)
             {
                 foreach (var process in Process.GetProcessesByName("FxSound"))
                 {
@@ -106,7 +108,7 @@ public partial class MainWindow : Window
                     process.WaitForExit();
                 }
 
-                this.hasFxSoundBeenStarted = false;
+                this.IsFxSoundRunning = false;
             }
 
             AudioDeviceService.SetDefaultDevice(selected.Device.Id, "Playback");
